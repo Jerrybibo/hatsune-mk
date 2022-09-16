@@ -15,44 +15,43 @@
           "ammo": "./js/ammo.js",
           "three": "https://unpkg.com/three@0.144.0/build/three.module.js",
           "mmdloader": "https://unpkg.com/three@0.144.0/examples/jsm/loaders/MMDLoader.js",
+          "mmdphysics": "https://unpkg.com/three@0.144.0/examples/jsm/animation/MMDPhysics.js",
           "mmdhelper": "https://unpkg.com/three@0.144.0/examples/jsm/animation/MMDAnimationHelper.js",
           "orbitcontrols": "https://unpkg.com/three@0.144.0/examples/jsm/controls/OrbitControls.js"
         }
       }
     </script>
     <canvas id="bg"></canvas>
-    <main class="container-fluid">
-        <section class="py-5 text-center">
-            <div class="row py-5">
-                <div class="col-lg-6 col-md-8 mx-auto">
-                    <p class="lead text-light">Press P to pause.</p>
-                </div>
-            </div>
-        </section>
-    </main>
     <script type="module">
         // Imports
         import ammo from "ammo";
         import * as THREE from "three";
         import { MMDLoader } from "mmdloader";
         import { MMDAnimationHelper } from "mmdhelper";
-        import { OrbitControls } from "orbitcontrols";
+        // import { OrbitControls } from "orbitcontrols";
+        import { Vector3 } from "three";
 
-        var clock = new THREE.Clock();
+        let clock = new THREE.Clock();
+        let animationDuration = 124;
+        let timeOnLoad;
 
         const Ammo = await ammo.bind(window)();
 
         // Initialization
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({canvas: document.querySelector('#bg'), alpha: true});
-        const controls = new OrbitControls(camera, renderer.domElement);
+        // const controls = new OrbitControls(camera, renderer.domElement);
         const modelFile = './resources/miku.pmx';
-        const vmdFiles = ['./resources/run.vmd'];
+        const vmdFiles = ['./resources/run-f.vmd'];
         let running = true;
 
         // Set up rendering elements
-        camera.position.set(0, 2, 15);
+        // camera.position.set(0, 2, 15);
+        // camera.rotation.set(0, 42, 0);
+        camera.position.set(-27.2, 3.5, 27.8);
+        camera.rotation.set(0.1134, -0.8694, 0.0868);
+        camera.lookAt(0, 0, 0);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
@@ -67,23 +66,24 @@
         // scene.background = new THREE.Color(0x222222);
 
         // Load MMD model + animation
-        const helper = new MMDAnimationHelper(
-            // {
-            //     pmxAnimation: true
-            // }
-        );
+        const helper = new MMDAnimationHelper({
+            pmxAnimation: true
+        });
         const loader = new MMDLoader();
-        loader.clampWhenFinished = true;
+        // loader.clampWhenFinished = true;
         loader.loadWithAnimation(
             modelFile,
             vmdFiles,
             function (mmd) {
                 helper.add( mmd.mesh, {
                     animation: mmd.animation,
-                    physics: true
+                    physics: true,
+                    gravity: new Vector3(0, -100, 0),
                 } );
+                mmd.mesh.castShadow = true;
                 mmd.mesh.position.y = -10;
                 scene.add(mmd.mesh);
+                timeOnLoad = clock.elapsedTime;
             },
             function (xhr) {
                 console.log((xhr.loaded / xhr.total * 100) + '% loaded');
@@ -92,7 +92,6 @@
                 console.log('An error occurred.', error);
             }
         );
-
         // Window resize event listener callback
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -103,23 +102,39 @@
         // Animate loop for OrbitControls
         function animate() {
             requestAnimationFrame(animate);
-            controls.update();
+            // controls.update();
             renderer.render(scene, camera);
             render();
         }
 
         function render() {
             helper.update(clock.getDelta());
+            if (clock.elapsedTime > timeOnLoad + animationDuration / 30 && running) {
+                running = !running;
+                helper.enable('animation', running);
+                helper.enable('physics', running);
+            }
         }
 
         window.addEventListener('resize', onWindowResize, false);
-        document.addEventListener('keydown', function(event) {
-            if (event.code === 'KeyP') {
-                running = !running;
-                helper.enable('animation', running);
-            }
-        });
+        // document.addEventListener('keydown', function(event) {
+        //     if (event.code === 'KeyP') {
+        //         running = !running;
+        //         helper.enable('animation', running);
+        //         helper.enable('physics', running);
+        //     }
+        // });
         animate();
     </script>
+
+    <main class="container-fluid">
+        <section class="py-5 text-center">
+            <div class="row py-5">
+                <div class="col-lg-6 col-md-8 mx-auto">
+                    <p class="lead text-light">Press P to pause.</p>
+                </div>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

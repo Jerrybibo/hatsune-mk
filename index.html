@@ -13,11 +13,10 @@
       {
         "imports": {
           "ammo": "./js/ammo.js",
-          "three": "https://unpkg.com/three@0.144.0/build/three.module.js",
-          "mmdloader": "https://unpkg.com/three@0.144.0/examples/jsm/loaders/MMDLoader.js",
-          "mmdphysics": "https://unpkg.com/three@0.144.0/examples/jsm/animation/MMDPhysics.js",
-          "mmdhelper": "https://unpkg.com/three@0.144.0/examples/jsm/animation/MMDAnimationHelper.js",
-          "orbitcontrols": "https://unpkg.com/three@0.144.0/examples/jsm/controls/OrbitControls.js"
+          "three": "./js/three.module.js",
+          "mmdloader": "./js/loaders/MMDLoader.js",
+          "mmdphysics": "./js/animation/MMDPhysics.js",
+          "mmdhelper": "./js/animation/MMDAnimationHelper.js"
         }
       }
     </script>
@@ -28,7 +27,6 @@
         import * as THREE from "three";
         import { MMDLoader } from "mmdloader";
         import { MMDAnimationHelper } from "mmdhelper";
-        // import { OrbitControls } from "orbitcontrols";
         import { Vector3 } from "three";
 
         let clock = new THREE.Clock();
@@ -42,13 +40,13 @@
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({canvas: document.querySelector('#bg'), alpha: true});
         // const controls = new OrbitControls(camera, renderer.domElement);
-        const modelFile = './resources/miku.pmx';
-        const vmdFiles = ['./resources/run-f.vmd'];
+        const modelFile = './resources/models/appearance_miku/miku.pmx';
+        const vmdFiles = ['./resources/anims/appearance_miku/run-f2.vmd'];
         let running = true;
 
         // Set up rendering elements
-        // camera.position.set(0, 2, 15);
-        // camera.rotation.set(0, 42, 0);
+        // camera.position.set(0, 2, 25);
+        // camera.rotation.set(0, 50, 0);
         camera.position.set(-27.2, 3.5, 27.8);
         camera.rotation.set(0.1134, -0.8694, 0.0868);
         camera.lookAt(0, 0, 0);
@@ -57,10 +55,10 @@
         document.body.appendChild(renderer.domElement);
 
         // Add lighting
-        const pointLight = new THREE.PointLight(0xffffff, 0.5);
+        const pointLight = new THREE.PointLight(0xffffff, 0.4);
         pointLight.position.set(0, 200, 0)
         scene.add(pointLight);
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
         scene.add(ambientLight);
         renderer.setClearColor(0x000000, 0);
         // scene.background = new THREE.Color(0x222222);
@@ -104,10 +102,6 @@
             requestAnimationFrame(animate);
             // controls.update();
             renderer.render(scene, camera);
-            render();
-        }
-
-        function render() {
             helper.update(clock.getDelta());
             if (clock.elapsedTime > timeOnLoad + animationDuration / 30 && running) {
                 running = !running;

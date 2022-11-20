@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Welcome!</title>
+  <link rel="stylesheet" type="text/css" href="./style.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
+</head>
+<body style="background-color: #222222">
+  <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+  <script async src="https://platform.twitter.com/widgets.js" charSet="utf-8"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "../js/three.module.js",
+        "css3drenderer": "../js/renderers/CSS3DRenderer.js"
+      }
+    }
+  </script>
+
+  <div id="canvas" style="position: fixed"></div>
+
+  <div id="blocker"></div>
+  <script type="module">
+    import * as THREE from "../js/three.module.js";
+    import { CSS3DRenderer, CSS3DObject } from "../js/renderers/CSS3DRenderer.js";
+
+    function rad(deg) {
+        return deg * Math.PI / 180;
+    }
+
+    function appendToGroup(callback, status_id) {
+      createBlockquote(status_id).then(
+        function(data) {
+          callback(data)
+        }
+      )
+    }
+
+    let createBlockquote = async function(status_id) {
+      // Create XMLHTTPRequest
+      const request = new XMLHttpRequest();
+      const url = `https://hatsune-mk-api-kysx6ikixa-ue.a.run.app/retrieve_tweet_embed?status_id=${status_id}`;
+        request.open("GET", url, false);
+        request.send();
+        // const response = JSON.parse(request.responseText);
+        // const html = response.html;
+        const blockquote = document.createElement("blockquote");
+        blockquote.className = "twitter-tweet";
+        blockquote.setAttribute("data-theme", "dark");
+        blockquote.innerHTML = request.responseText;
+        return blockquote;
+    }
+
+    let camera, scene, renderer;
+    // let controls;
+    let Element = function (data, x, y, z, rx, ry, rz) {
+      let div = document.createElement('div');
+      div.style.backgroundColor = 'transparent';
+      div.insertAdjacentElement('afterbegin', data)
+      let blockquote = div.getElementsByTagName('blockquote')[0]
+      blockquote.style.border = '0px';
+      let object = new CSS3DObject(div);
+      object.scale.set(0.4, 0.4, 0.4);
+      object.position.set(x, y, z);
+      object.rotation.set(rx, ry, rz);
+      object.originalPosition = {'x': x, 'y': y, 'z': z};
+      object.originalRotation = {'x': rx, 'y': ry, 'z': rz};
+      return object;
+    };
+
+    init();
+    animate();
+
+    function init() {
+      document.body.style.height = '300vh';
+
+      let canvas = document.getElementById('canvas');
+
+      camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
+      camera.position.set(500, 350, 750);
+
+      scene = new THREE.Scene();
+
+      renderer = new CSS3DRenderer({
+        canvas: document.querySelector('#canvas')
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      canvas.appendChild(renderer.domElement);
+      appendToGroup(function(data) {
+        scene.add(new Element(data, 480, 500, 0, rad(75), rad(120), 0));
+      }, '1572327991509909505');
+      appendToGroup(function(data) {
+        scene.add(new Element(data, 0, 900, 0, rad(70), 0, 0));
+      }, '1593336929508274176');
+
+      scene.add(new THREE.GridHelper(200, 50))
+      // controls = new TrackballControls(camera, renderer.domElement);
+      // controls.rotateSpeed = 4;
+
+      window.addEventListener('resize', onWindowResize, false);
+
+      // Block iframe events when dragging camera
+
+      let blocker = document.getElementById('blocker');
+      blocker.style.display = 'none';
+
+      document.addEventListener('mousedown', function () {
+
+        blocker.style.display = '';
+
+      });
+      document.addEventListener('mouseup', function () {
+
+        blocker.style.display = 'none';
+
+      });
+
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+    }
+
+    function animate() {
+
+      requestAnimationFrame(animate);
+      // controls.update();
+      renderer.render(scene, camera);
+
+    }
+
+    function moveCamera() {
+      // Get the position relative to the top of the page
+      const t = document.body.getBoundingClientRect().top;
+      for (let i = 0; i < scene.children.length; i++) {
+        const child = scene.children[i];
+        if (child.hasOwnProperty('originalPosition')) {
+          child.position.y = child.originalPosition.y + t * 0.7;
+          child.rotation.x = child.originalRotation.x + rad(t / 2);
+          child.rotation.y = child.originalRotation.y + rad(t / 5) * (i % 2 ? 1 : -1);
+          child.rotation.z = child.originalRotation.z + rad(t / 10);
+        }
+      }
+
+    }
+    document.body.onscroll = moveCamera;
+
+
+  </script>
+</body>
+</html>
+

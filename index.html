@@ -14,6 +14,7 @@
         "imports": {
           "ammo": "./js/ammo.js",
           "three": "./js/three.module.js",
+          "gltfloader": "./js/loaders/GLTFLoader.js",
           "mmdloader": "./js/loaders/MMDLoader.js",
           "mmdphysics": "./js/animation/MMDPhysics.js",
           "mmdhelper": "./js/animation/MMDAnimationHelper.js"
@@ -28,6 +29,7 @@
         import { MMDLoader } from "mmdloader";
         import { MMDAnimationHelper } from "mmdhelper";
         import { Vector3 } from "three";
+        // import { GLTFLoader } from "gltfloader";
 
         let clock = new THREE.Clock();
         let animationDuration = 124;
@@ -42,7 +44,24 @@
         // const controls = new OrbitControls(camera, renderer.domElement);
         const modelFile = './resources/models/appearance_miku/miku.pmx';
         const vmdFiles = ['./resources/anims/appearance_miku/run-f2.vmd'];
-        let running = true;
+        let running = false;
+
+        const progressBar = document.getElementById('progress-bar');
+        const progressBarContainer = document.querySelector('.progress-bar-container');
+
+        // Set up loadingManager
+        const loadingManager = new THREE.LoadingManager();
+        loadingManager.onStart = function (url, itemsLoaded, itemsTotal) {
+            console.log('Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+        };
+        loadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
+            progressBar.value = 100 * (itemsLoaded / itemsTotal);
+        };
+        loadingManager.onLoad = function () {
+            console.log('Loading complete!');
+            progressBarContainer.style.display = 'none';
+            running = true;
+        };
 
         // Set up rendering elements
         // camera.position.set(0, 2, 25);
@@ -67,7 +86,7 @@
         const helper = new MMDAnimationHelper({
             pmxAnimation: true
         });
-        const loader = new MMDLoader();
+        const loader = new MMDLoader(loadingManager);
         // loader.clampWhenFinished = true;
         loader.loadWithAnimation(
             modelFile,
@@ -132,5 +151,10 @@
             </div>
         </section>
     </main>
+
+    <div class="progress-bar-container">
+        <label for="progress-bar" class="progress-bar-label">Loading...</label>
+        <progress id="progress-bar" class="progress-bar" value="0" max="100"></progress>
+    </div>
 </body>
 </html>

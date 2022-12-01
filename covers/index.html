@@ -119,7 +119,7 @@
       canvas.appendChild(renderer.domElement);
 
       // Render tweets
-      Object.entries(tweets).forEach(([index, tweet]) => {
+      Object.entries(tweets).forEach(([_, tweet]) => {
         console.log(tweet)
         appendToGroup(function(data) {
           scene.add(new Element(data, ...tweet['pos']));

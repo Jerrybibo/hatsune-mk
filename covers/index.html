@@ -26,6 +26,34 @@
     import * as THREE from "../js/three.module.js";
     import { CSS3DRenderer, CSS3DObject } from "../js/renderers/CSS3DRenderer.js";
 
+    // Tweet sources
+    const tweets = {
+      0: {
+        id: '1572327991509909505',
+        pos: [320, 1000, 0, rad(75), rad(120), 0]
+      },
+      1: {
+        id: '1593336929508274176',
+        pos: [0, 1200, 20, rad(70), 0, 0]
+      },
+      2: {
+        id: '1594012865102434305',
+        pos: [1000, 1100, 0, rad(45), rad(30), 0]
+      },
+      3: {
+        id: '1595546945530957825',
+        pos: [800, 1200, 400, rad(30), 0, rad(15)]
+      },
+      4: {
+        id: '1596310650716041218',
+        pos: [320, 1300, 0, rad(90), rad(45), rad(30)]
+      },
+      5: {
+        id: '1594192777029775361',
+        pos: [720, 1100, 0, rad(30), rad(15), rad(15)]
+      }
+    }
+
     function rad(deg) {
         return deg * Math.PI / 180;
     }
@@ -76,6 +104,7 @@
     function init() {
       document.body.style.height = '300vh';
 
+      // Setup
       let canvas = document.getElementById('canvas');
 
       camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
@@ -88,50 +117,44 @@
       });
       renderer.setSize(window.innerWidth, window.innerHeight);
       canvas.appendChild(renderer.domElement);
-      appendToGroup(function(data) {
-        scene.add(new Element(data, 480, 500, 0, rad(75), rad(120), 0));
-      }, '1572327991509909505');
-      appendToGroup(function(data) {
-        scene.add(new Element(data, 0, 900, 0, rad(70), 0, 0));
-      }, '1593336929508274176');
 
-      scene.add(new THREE.GridHelper(200, 50))
+      // Render tweets
+      Object.entries(tweets).forEach(([index, tweet]) => {
+        console.log(tweet)
+        appendToGroup(function(data) {
+          scene.add(new Element(data, ...tweet['pos']));
+        }, tweet['id']);
+      })
+
+      // scene.add(new THREE.GridHelper(200, 50))
       // controls = new TrackballControls(camera, renderer.domElement);
       // controls.rotateSpeed = 4;
 
+      // Event listeners
       window.addEventListener('resize', onWindowResize, false);
 
       // Block iframe events when dragging camera
-
       let blocker = document.getElementById('blocker');
       blocker.style.display = 'none';
 
       document.addEventListener('mousedown', function () {
-
         blocker.style.display = '';
-
       });
       document.addEventListener('mouseup', function () {
-
         blocker.style.display = 'none';
-
       });
-
     }
 
     function onWindowResize() {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-
     }
 
     function animate() {
-
       requestAnimationFrame(animate);
       // controls.update();
       renderer.render(scene, camera);
-
     }
 
     function moveCamera() {
@@ -149,7 +172,6 @@
 
     }
     document.body.onscroll = moveCamera;
-
 
   </script>
 </body>
